@@ -1,0 +1,23 @@
+{
+  "name": "whatsapp-pancake",
+  "version": "0.0.2",
+  "main": "./dist/index.js",
+  "scripts": {
+    "dev": "npx tsc && node ./dist/index.js",
+    "clean": "rd /s /q \"./.wwebjs_auth\" && rd /s /q \"./.wwebjs_cache\" && rm -rf \"./.wwebjs_auth\" && rm -rf \"./.wwebjs_cache\"",
+    "start": "echo Running on Production && node ./dist/index.js"
+  },
+  "keywords": [],
+  "author": "specifix5",
+  "license": "MIT",
+  "description": "",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "qrcode-terminal": "^0.12.0",
+    "sequelize": "^6.37.5",
+    "sqlite3": "^5.1.7",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3",
+    "whatsapp-web.js": "^1.26.0"
+  }
+}
