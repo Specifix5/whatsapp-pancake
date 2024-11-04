@@ -32,26 +32,41 @@ const filterOutdatedReminders = async (groupSettings: GroupSettings): Promise<Ar
   return filteredReminders;
 }
 
+const sortRemindersByImportant = (reminders: Array<Reminder>): Array<Reminder> => {
+  return reminders.sort((a, b) => {
+    const dateComparison = getDayOrder(a.eventDate) - getDayOrder(b.eventDate);
+    if (dateComparison !== 0) return dateComparison;
+
+    const isImportantA = a.text.startsWith("‼️(IMPORTANT)");
+    const isImportantB = b.text.startsWith("‼️(IMPORTANT)");
+
+    if (isImportantA && !isImportantB) return -1;
+    if (!isImportantA && isImportantB) return 1;
+
+    return 0; // Keep the order for non-important items on the same date
+  });
+}
+
 const createReminderMessage = async (chat: Chat, groupSettings: GroupSettings) => {
   let reminders = await filterOutdatedReminders(groupSettings);
   let now = new Date();
   let startOfWeek = new Date(now);
   startOfWeek.setDate(now.getDate() - now.getDay());
 
-  let currentWeek = reminders.filter(r => {
+  let currentWeek = sortRemindersByImportant(reminders.filter(r => {
     const daysDifference = Math.floor((r.eventDate.getTime() - startOfWeek.getTime()) / (1000 * 60 * 60 * 24));
     return daysDifference >= 0 && daysDifference <= 7;
-  }).sort((a, b) => getDayOrder(a.eventDate) - getDayOrder(b.eventDate));
+  }));
 
-  let nextWeek = reminders.filter(r => {
+  let nextWeek = sortRemindersByImportant(reminders.filter(r => {
     const daysDifference = Math.floor((r.eventDate.getTime() - startOfWeek.getTime()) / (1000 * 60 * 60 * 24));
     return daysDifference > 7 && daysDifference <= 14;
-  }).sort((a, b) => getDayOrder(a.eventDate) - getDayOrder(b.eventDate));
+  }))
 
-  let twoWeeksOut = reminders.filter(r => {
+  let twoWeeksOut = sortRemindersByImportant(reminders.filter(r => {
     const daysDifference = Math.floor((r.eventDate.getTime() - startOfWeek.getTime()) / (1000 * 60 * 60 * 24));
     return daysDifference > 14 && daysDifference <= 21;
-  }).sort((a, b) => getDayOrder(a.eventDate) - getDayOrder(b.eventDate));
+  }))
 
   let previousMessage = groupSettings.pinMessageId ? (await chat.fetchMessages({ fromMe: true, limit: 100 })).find(m => m.id.id === groupSettings.pinMessageId) : null;
   if (previousMessage) {
@@ -62,9 +77,9 @@ const createReminderMessage = async (chat: Chat, groupSettings: GroupSettings) =
   let messageBody = [
     `❇️ *${groupSettings.groupName || "Unnamed"} Calendar*`,
     " ",
-    currentWeek.length > 0 ? "*THIS WEEK REMINDERS*\n" + currentWeek.map(r => `* *[${getDayNameInTimezone(r.eventDate, process.env.TIMEZONE)}, ${getDateInTimezone(r.eventDate, process.env.TIMEZONE)}]* ${r.text}`).join("\n") + "\n" : "",
-    nextWeek.length > 0 ? "*NEXT WEEK REMINDERS*\n" + nextWeek.map(r => `* *[${getDayNameInTimezone(r.eventDate, process.env.TIMEZONE)}, ${getDateInTimezone(r.eventDate, process.env.TIMEZONE)}]* ${r.text}`).join("\n") + "\n" : "",
-    twoWeeksOut.length > 0 ? "*IN 2 WEEKS*\n" + twoWeeksOut.map(r => `* *[${getDayNameInTimezone(r.eventDate, process.env.TIMEZONE)}, ${getDateInTimezone(r.eventDate, process.env.TIMEZONE)}]* ${r.text}`).join("\n") + "\n" : "",
+    currentWeek.length > 0 ? "*THIS WEEK REMINDERS*\n" + currentWeek.map(r => `* *[${getDayNameInTimezone(r.eventDate, process.env.TIMEZONE)}, ${getDateInTimezone(r.eventDate, process.env.TIMEZONE)}]* ${r.text}`).join("\n") : "",
+    nextWeek.length > 0 ? "\n*NEXT WEEK REMINDERS*\n" + nextWeek.map(r => `* *[${getDayNameInTimezone(r.eventDate, process.env.TIMEZONE)}, ${getDateInTimezone(r.eventDate, process.env.TIMEZONE)}]* ${r.text}`).join("\n") : "",
+    twoWeeksOut.length > 0 ? "\n*IN 2 WEEKS*\n" + twoWeeksOut.map(r => `* *[${getDayNameInTimezone(r.eventDate, process.env.TIMEZONE)}, ${getDateInTimezone(r.eventDate, process.env.TIMEZONE)}]* ${r.text}`).join("\n"): "",
     "ℹ️ _Format: [Day dd/mm] Notice_",
     "🕓 _Last updated: " + formatDateTime(new Date(), process.env.TIMEZONE) + "_"
   ];
