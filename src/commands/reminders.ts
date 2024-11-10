@@ -4,33 +4,33 @@ import { formatDateTime, getDateInTimezone, getDayNameInTimezone, getDayOrder } 
 import { Chat } from "whatsapp-web.js";
 
 const queueForDeletion = async (queue: Array<Reminder>) => {
- await loggedTransaction(async (transaction) => {
-  await Promise.all(queue.map(async r => {
-    await Reminder.destroy({
-      where: { id: r.id },
-      force: true,
-      transaction: transaction
-    });
-  }));
- }) 
-}
+  await loggedTransaction(async (transaction) => {
+    await Promise.all(queue.map(async r => {
+      await Reminder.destroy({
+        where: { id: r.id },
+        force: true,
+        transaction: transaction
+      });
+    }));
+  }); 
+};
 
 const filterOutdatedReminders = async (groupSettings: GroupSettings): Promise<Array<Reminder>> => {
   let filteredReminders = await getGroupReminders(groupSettings);
 
-  let queuedForDeletion: Reminder[] = [];
-  filteredReminders = filteredReminders.map(r => {
+  const queuedForDeletion: Reminder[] = [];
+  filteredReminders = filteredReminders.filter(r => {
     if (r.eventDate.getTime() < new Date().getTime()) {
       queuedForDeletion.push(r);
-      return;
+      return false;
     } else {
-      return r;
+      return true;
     }
   }) as Reminder[];
 
   await queueForDeletion(queuedForDeletion);
   return filteredReminders;
-}
+};
 
 const sortRemindersByImportant = (reminders: Array<Reminder>): Array<Reminder> => {
   return reminders.sort((a, b) => {
@@ -45,36 +45,36 @@ const sortRemindersByImportant = (reminders: Array<Reminder>): Array<Reminder> =
 
     return 0; // Keep the order for non-important items on the same date
   });
-}
+};
 
 const createReminderMessage = async (chat: Chat, groupSettings: GroupSettings) => {
-  let reminders = await filterOutdatedReminders(groupSettings);
-  let now = new Date();
-  let startOfWeek = new Date(now);
+  const reminders = await filterOutdatedReminders(groupSettings);
+  const now = new Date();
+  const startOfWeek = new Date(now);
   startOfWeek.setDate(now.getDate() - now.getDay());
 
-  let currentWeek = sortRemindersByImportant(reminders.filter(r => {
+  const currentWeek = sortRemindersByImportant(reminders.filter(r => {
     const daysDifference = Math.floor((r.eventDate.getTime() - startOfWeek.getTime()) / (1000 * 60 * 60 * 24));
     return daysDifference >= 0 && daysDifference <= 7;
   }));
 
-  let nextWeek = sortRemindersByImportant(reminders.filter(r => {
+  const nextWeek = sortRemindersByImportant(reminders.filter(r => {
     const daysDifference = Math.floor((r.eventDate.getTime() - startOfWeek.getTime()) / (1000 * 60 * 60 * 24));
     return daysDifference > 7 && daysDifference <= 14;
-  }))
+  }));
 
-  let twoWeeksOut = sortRemindersByImportant(reminders.filter(r => {
+  const twoWeeksOut = sortRemindersByImportant(reminders.filter(r => {
     const daysDifference = Math.floor((r.eventDate.getTime() - startOfWeek.getTime()) / (1000 * 60 * 60 * 24));
     return daysDifference > 14 && daysDifference <= 21;
-  }))
+  }));
 
-  let previousMessage = groupSettings.pinMessageId ? (await chat.fetchMessages({ fromMe: true, limit: 100 })).find(m => m.id.id === groupSettings.pinMessageId) : null;
+  const previousMessage = groupSettings.pinMessageId ? (await chat.fetchMessages({ fromMe: true, limit: 100 })).find(m => m.id.id === groupSettings.pinMessageId) : null;
   if (previousMessage) {
     await previousMessage.unpin();
     await previousMessage.delete(true);
   }
 
-  let messageBody = [
+  const messageBody = [
     `❇️ *${groupSettings.groupName || "Unnamed"} Calendar*`,
     " ",
     currentWeek.length > 0 ? "*THIS WEEK REMINDERS*\n" + currentWeek.map(r => `* *[${getDayNameInTimezone(r.eventDate, process.env.TIMEZONE)}, ${getDateInTimezone(r.eventDate, process.env.TIMEZONE)}]* ${r.text}`).join("\n") : "",
@@ -84,12 +84,12 @@ const createReminderMessage = async (chat: Chat, groupSettings: GroupSettings) =
     "🕓 _Last updated: " + formatDateTime(new Date(), process.env.TIMEZONE) + "_"
   ];
 
-  let pinMessage = await chat.sendMessage(messageBody.join("\n"));
+  const pinMessage = await chat.sendMessage(messageBody.join("\n"));
   await pinMessage.pin(60 * 60 * 60 * 72);
 
   groupSettings.pinMessageId = pinMessage.id.id;
   await setGroupSettings(groupSettings);
-}
+};
 
 export const SetReminderCommand: WhatsappCommand = {
   name: "addreminder",
@@ -115,8 +115,8 @@ export const SetReminderCommand: WhatsappCommand = {
     }
   ],
   run: async (interaction: WhatsappInteraction) => {
-    let date = interaction.getOption<Date>("date");
-    let text = interaction.getOption<string>("text");
+    const date = interaction.getOption<Date>("date");
+    const text = interaction.getOption<string>("text");
     if (!date) throw new Error("Date not set.");
 
     // So the date actually changes instead of being the day before because 0:00
@@ -124,14 +124,15 @@ export const SetReminderCommand: WhatsappCommand = {
     
     try {
       if (interaction.message.fromMe || interaction.getOption<boolean>("incognito")) await interaction.message.delete(true);
-    } catch (err: any) { };
+    } catch (_err: any) { };
 
     if (!(await interaction.message.getChat()).isGroup) throw new Error ("Must be in a group to use this command.");
     if (date.getTime() < new Date().getTime()) throw new Error ("Event date can't be in the past!");
-    if ((date.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24 * 7) > 2) throw new Error ("Event Date can only be a maximum of 2 weeks out!") 
+    console.log((date.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24 * 7));
+    if ((date.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24 * 7) > 2) throw new Error ("Event Date can only be a maximum of 2 weeks out!"); 
 
-    let chat = await interaction.message.getChat();
-    let groupSettings = await getGroupSettings(chat);
+    const chat = await interaction.message.getChat();
+    const groupSettings = await getGroupSettings(chat);
 
     await addRemindersToGroup(groupSettings, [
       {
@@ -142,7 +143,7 @@ export const SetReminderCommand: WhatsappCommand = {
 
     await createReminderMessage(chat, groupSettings);
   }
-}
+};
 
 export const ListReminderCommand: WhatsappCommand = {
   name: "listreminders",
@@ -157,24 +158,24 @@ export const ListReminderCommand: WhatsappCommand = {
   run: async (interaction: WhatsappInteraction) => {
     try {
       if (interaction.message.fromMe || interaction.getOption<boolean>("incognito")) await interaction.message.delete(true);
-    } catch (err: any) { };
+    } catch (_err: any) { };
 
     if (!(await interaction.message.getChat()).isGroup) throw new Error ("Must be in a group to use this command.");
 
-    let chat = await interaction.message.getChat();
-    let groupSettings = await getGroupSettings(chat);
+    const chat = await interaction.message.getChat();
+    const groupSettings = await getGroupSettings(chat);
 
-    let reminders = await getGroupReminders(groupSettings);
-    let messageBody = [
+    const reminders = await getGroupReminders(groupSettings);
+    const messageBody = [
       `📝 *${groupSettings.groupName || "Unnamed"} Reminders List*`,
       "ℹ _Format: [#Id] Notice_",
       " ",
       "```" + reminders.map(r => `[#${r.id}] ${r.text}`).join("\n") + "```"
-    ]
+    ];
 
     await interaction.message.reply(messageBody.join("\n"));
   }
-}
+};
 
 export const DeleteReminderCommand: WhatsappCommand = {
   name: "delreminder",
@@ -195,20 +196,20 @@ export const DeleteReminderCommand: WhatsappCommand = {
   run: async (interaction: WhatsappInteraction) => {
     try {
       if (interaction.message.fromMe || interaction.getOption<boolean>("incognito")) await interaction.message.delete(true);
-    } catch (err: any) { };
+    } catch (_err: any) { };
 
     if (!(await interaction.message.getChat()).isGroup) throw new Error ("Must be in a group to use this command.");
 
-    let chat = await interaction.message.getChat();
-    let groupSettings = await getGroupSettings(chat);
-    let id = interaction.getOption<number>("id");
+    const chat = await interaction.message.getChat();
+    const groupSettings = await getGroupSettings(chat);
+    const id = interaction.getOption<number>("id");
     if (!id) throw new Error ("Id not found!");
 
     await deleteReminder(groupSettings, id);
     await interaction.message.reply("Successfully deleted reminder #" + id);
     await createReminderMessage(chat, groupSettings);
   }
-}
+};
 
 export const UpdateReminderCommand: WhatsappCommand = {
   name: "updatereminders",
@@ -223,13 +224,13 @@ export const UpdateReminderCommand: WhatsappCommand = {
   run: async (interaction: WhatsappInteraction) => {
     try {
       if (interaction.message.fromMe || interaction.getOption<boolean>("incognito")) await interaction.message.delete(true);
-    } catch (err: any) { };
+    } catch (_err: any) { };
 
     if (!(await interaction.message.getChat()).isGroup) throw new Error ("Must be in a group to use this command.");
 
-    let chat = await interaction.message.getChat();
-    let groupSettings = await getGroupSettings(chat);
+    const chat = await interaction.message.getChat();
+    const groupSettings = await getGroupSettings(chat);
 
     await createReminderMessage(chat, groupSettings);
   }
-}
+};

@@ -82,7 +82,7 @@ export const loggedTransaction = async (callback: (transaction: Transaction) => 
   try {
     const result = await callback(transaction);
     await transaction.commit();
-    isDebugging && logger("[DB] Transaction committed successfully.");
+    if (isDebugging) logger("[DB] Transaction committed successfully.");
     return result;
   } catch (error) {
     await transaction.rollback();
@@ -105,41 +105,43 @@ export const getGroupSettings = async (chat: Chat): Promise<GroupSettings> => {
 
     return groupSettings;
   });
-}
+};
 
 export const setGroupSettings = async (groupSettings: GroupSettings): Promise<GroupSettings> => {
   return await loggedTransaction(async (transaction) => {
     await groupSettings.save({ transaction: transaction });
     return groupSettings;
   });
-}
+};
 
 export const getGroupReminders = async (group: GroupSettings): Promise<Array<Reminder>> => {
   return await loggedTransaction(async (transaction) => {
     return group.getReminders({ transaction: transaction });
-  })
-}
+  });
+};
 
 export const addRemindersToGroup = async (group: GroupSettings, remindersData: ReminderData[]) => {
   return await loggedTransaction(async (transaction) => {
     const reminders = await Promise.all(
       remindersData.map(async (reminderData: ReminderData) => {
-        const reminder = await Reminder.create({ ...reminderData } as any, { transaction });
+        const reminder = await Reminder.create({
+          ...reminderData
+        } as any, { transaction });
         await group.addReminder(reminder, { transaction });
         return reminder;
       })
     );
 
     return reminders;
-  })
+  });
 };
 
-export const deleteReminder = async (group: GroupSettings, id: number) => {
+export const deleteReminder = async (_group: GroupSettings, id: number) => {
   return await loggedTransaction(async (transaction) => {
     await Reminder.destroy({
       where: { id: id },
       force: true,
       transaction: transaction
     });
-  })
-}
+  });
+};

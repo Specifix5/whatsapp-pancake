@@ -1,7 +1,7 @@
 export const getDayNameInTimezone = (date: Date, timezone: string = 'UTC'): string => {
   const formatter = new Intl.DateTimeFormat('en-US', { timeZone: timezone, weekday: "long" });
   return formatter.format(date);
-}
+};
 
 export const getDateInTimezone = (date: Date, timezone: string = 'UTC'): string => {
   const formatter = new Intl.DateTimeFormat('en-GB', { timeZone: timezone, day: '2-digit', month: '2-digit', year: '2-digit' });
@@ -9,15 +9,14 @@ export const getDateInTimezone = (date: Date, timezone: string = 'UTC'): string 
   
   const day = parts.find(part => part.type === 'day')?.value;
   const month = parts.find(part => part.type === 'month')?.value;
-  const year = parts.find(part => part.type === 'year')?.value;
 
   return `${day}/${month}`;
-}
+};
 
 export const getDayOrder = (date: Date): number => {
   const day = date.getDay();
   return day === 0 ? 7 : day; // Set Sunday (0) to 7 to place it after Saturday
-}
+};
 
 export const formatDateTime = (date: Date, timezone: string = 'UTC'): string => {
   const formatter = new Intl.DateTimeFormat('en-GB', {
@@ -40,4 +39,4 @@ export const formatDateTime = (date: Date, timezone: string = 'UTC'): string => 
   const year = parts.find(part => part.type === 'year')?.value;
 
   return `${hours}:${minutes}:${seconds} ${day}/${month}/${year}`;
-}
+};

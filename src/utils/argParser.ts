@@ -20,7 +20,7 @@ export const parseMessageArgs = (args: string[], commandOptions?: Array<Whatsapp
   commandOptions.forEach((option, index) => {
     const arg = args[index];
 
-    if (option.required && (arg === undefined || arg === null)) throw new Error('Missing required arguments "' + option.name + '"')
+    if (option.required && (arg === undefined || arg === null)) throw new Error('Missing required arguments "' + option.name + '"');
 
     // Parse and store the argument based on the type defined in the command options
     switch (option.type) {
@@ -31,14 +31,14 @@ export const parseMessageArgs = (args: string[], commandOptions?: Array<Whatsapp
         options[option.name] = arg || null;
         break;
       case WhatsappCommandOptionType.Number:
-        if (isNaN(Number(arg))) throw new Error ('Arg "' + option.name + '" is not a number!')
-        options[option.name] = Number(arg)
+        if (isNaN(Number(arg))) throw new Error ('Arg "' + option.name + '" is not a number!');
+        options[option.name] = Number(arg);
         break;
       case WhatsappCommandOptionType.Date:
-        let rawDate = arg.replace(/-+|\/+/g, " ").trim().split(/\s+/);
+        const rawDate = arg.replace(/-+|\/+/g, " ").trim().split(/\s+/);
         if (rawDate.length < 3) throw new Error ('Invalid Date argument provided ' + rawDate.join("-"));
         
-        let date = new Date(`${rawDate[1]}-${rawDate[0]}-${rawDate[2]}`);
+        const date = new Date(`${rawDate[1]}-${rawDate[0]}-${rawDate[2]}`);
         if (isNaN(date.getTime())) throw new Error ('Invalid Date argument provided ' + rawDate);
 
         options[option.name] = date;

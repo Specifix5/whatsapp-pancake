@@ -1,7 +1,7 @@
-import { Chat, ChatId, Contact, GroupChat, InviteV4Data, Location, Message, MessageAck, MessageContent, MessageEditOptions, MessageId, MessageInfo, MessageMedia, MessageSendOptions, MessageTypes, Order, Payment, ReactionList } from "whatsapp-web.js"
-import { HelpCommand } from "../commands/help"
-import { DeleteReminderCommand, ListReminderCommand, SetReminderCommand, UpdateReminderCommand } from "../commands/reminders"
-import { SetGroupNameCommand } from "../commands/groups"
+import { Message } from "whatsapp-web.js";
+import { HelpCommand } from "../commands/help";
+import { DeleteReminderCommand, ListReminderCommand, SetReminderCommand, UpdateReminderCommand } from "../commands/reminders";
+import { SetGroupNameCommand } from "../commands/groups";
 
 export interface WhatsappCommand {
   name: string,
@@ -29,7 +29,7 @@ export type WhatsappCommandOptionValue =
 | number
 | boolean
 | Date
-| null
+| null;
 
 export type WhatsappCommandArgs = { [key: string]: WhatsappCommandOptionValue };
 
@@ -45,8 +45,8 @@ export class WhatsappInteraction {
 
   getOption<T extends WhatsappCommandOptionValue>(name: string): T | null {
     const value = this.options[name];  // Handle string-indexing safely
-      if (value === undefined || value === null) return null;
-      return value as T;
+    if (value === undefined || value === null) return null;
+    return value as T;
   }
 }
 
@@ -57,4 +57,4 @@ export const Commands: WhatsappCommand[] = [
   ListReminderCommand,
   DeleteReminderCommand,
   UpdateReminderCommand
-]
+];
