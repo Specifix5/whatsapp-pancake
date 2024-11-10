@@ -54,17 +54,17 @@ const createReminderMessage = async (chat: Chat, groupSettings: GroupSettings) =
   startOfWeek.setDate(now.getDate() - now.getDay());
 
   const currentWeek = sortRemindersByImportant(reminders.filter(r => {
-    const daysDifference = Math.floor((r.eventDate.getTime() - startOfWeek.getTime()) / (1000 * 60 * 60 * 24));
+    const daysDifference = (r.eventDate.getTime() - startOfWeek.getTime()) / (1000 * 60 * 60 * 24);
     return daysDifference >= 0 && daysDifference <= 7;
   }));
 
   const nextWeek = sortRemindersByImportant(reminders.filter(r => {
-    const daysDifference = Math.floor((r.eventDate.getTime() - startOfWeek.getTime()) / (1000 * 60 * 60 * 24));
+    const daysDifference = (r.eventDate.getTime() - startOfWeek.getTime()) / (1000 * 60 * 60 * 24);
     return daysDifference > 7 && daysDifference <= 14;
   }));
 
   const twoWeeksOut = sortRemindersByImportant(reminders.filter(r => {
-    const daysDifference = Math.floor((r.eventDate.getTime() - startOfWeek.getTime()) / (1000 * 60 * 60 * 24));
+    const daysDifference = (r.eventDate.getTime() - startOfWeek.getTime()) / (1000 * 60 * 60 * 24);
     return daysDifference > 14 && daysDifference <= 21;
   }));
 
@@ -129,7 +129,7 @@ export const SetReminderCommand: WhatsappCommand = {
     if (!(await interaction.message.getChat()).isGroup) throw new Error ("Must be in a group to use this command.");
     if (date.getTime() < new Date().getTime()) throw new Error ("Event date can't be in the past!");
     console.log((date.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24 * 7));
-    if ((date.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24 * 7) > 2) throw new Error ("Event Date can only be a maximum of 2 weeks out!"); 
+    if ((date.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24 * 7) >= 3) throw new Error ("Event Date can only be a maximum of 2 weeks out!"); 
 
     const chat = await interaction.message.getChat();
     const groupSettings = await getGroupSettings(chat);
