@@ -128,7 +128,6 @@ export const SetReminderCommand: WhatsappCommand = {
 
     if (!(await interaction.message.getChat()).isGroup) throw new Error ("Must be in a group to use this command.");
     if (date.getTime() < new Date().getTime()) throw new Error ("Event date can't be in the past!");
-    console.log((date.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24 * 7));
     if ((date.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24 * 7) >= 3) throw new Error ("Event Date can only be a maximum of 2 weeks out!"); 
 
     const chat = await interaction.message.getChat();
