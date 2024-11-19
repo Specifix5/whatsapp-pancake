@@ -2,6 +2,7 @@ import { WhatsappCommand, WhatsappCommandOptionType, WhatsappInteraction } from 
 import { addRemindersToGroup, deleteReminder, getGroupReminders, getGroupSettings, GroupSettings, loggedTransaction, Reminder, setGroupSettings } from "../utils/database";
 import { formatDateTime, getDateInTimezone, getDayNameInTimezone, getDayOrder } from "../utils/dates";
 import { Chat } from "whatsapp-web.js";
+import { inGroup } from "../utils/helpers";
 
 const queueForDeletion = async (queue: Array<Reminder>) => {
   await loggedTransaction(async (transaction) => {
@@ -126,7 +127,7 @@ export const SetReminderCommand: WhatsappCommand = {
       if (interaction.message.fromMe || interaction.getOption<boolean>("incognito")) await interaction.message.delete(true);
     } catch (_err: any) { };
 
-    if (!(await interaction.message.getChat()).isGroup) throw new Error ("Must be in a group to use this command.");
+    if (!inGroup(await interaction.message.getChat())) throw new Error ("Must be in a group to use this command.");
     if (date.getTime() < new Date().getTime()) throw new Error ("Event date can't be in the past!");
     if ((date.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24 * 7) >= 3) throw new Error ("Event Date can only be a maximum of 2 weeks out!"); 
 
@@ -159,7 +160,7 @@ export const ListReminderCommand: WhatsappCommand = {
       if (interaction.message.fromMe || interaction.getOption<boolean>("incognito")) await interaction.message.delete(true);
     } catch (_err: any) { };
 
-    if (!(await interaction.message.getChat()).isGroup) throw new Error ("Must be in a group to use this command.");
+    if (!inGroup(await interaction.message.getChat())) throw new Error ("Must be in a group to use this command.");
 
     const chat = await interaction.message.getChat();
     const groupSettings = await getGroupSettings(chat);
@@ -197,7 +198,7 @@ export const DeleteReminderCommand: WhatsappCommand = {
       if (interaction.message.fromMe || interaction.getOption<boolean>("incognito")) await interaction.message.delete(true);
     } catch (_err: any) { };
 
-    if (!(await interaction.message.getChat()).isGroup) throw new Error ("Must be in a group to use this command.");
+    if (!inGroup(await interaction.message.getChat())) throw new Error ("Must be in a group to use this command.");
 
     const chat = await interaction.message.getChat();
     const groupSettings = await getGroupSettings(chat);
@@ -225,7 +226,7 @@ export const UpdateReminderCommand: WhatsappCommand = {
       if (interaction.message.fromMe || interaction.getOption<boolean>("incognito")) await interaction.message.delete(true);
     } catch (_err: any) { };
 
-    if (!(await interaction.message.getChat()).isGroup) throw new Error ("Must be in a group to use this command.");
+    if (!inGroup(await interaction.message.getChat())) throw new Error ("Must be in a group to use this command.");
 
     const chat = await interaction.message.getChat();
     const groupSettings = await getGroupSettings(chat);

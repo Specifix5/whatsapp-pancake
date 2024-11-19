@@ -1,4 +1,5 @@
 import { getGroupSettings, setGroupSettings } from "../utils/database";
+import { inGroup } from "../utils/helpers";
 import { WhatsappCommand, WhatsappCommandOptionType, WhatsappInteraction } from "../utils/whatsappCommand";
 
 export const SetGroupNameCommand: WhatsappCommand = {
@@ -19,7 +20,7 @@ export const SetGroupNameCommand: WhatsappCommand = {
     try {
       if (interaction.message.fromMe || interaction.getOption<boolean>("incognito")) interaction.message.delete(true);
     } catch (_err: any) { };
-    if (!(await interaction.message.getChat()).isGroup) throw new Error ("Must be in a group to use this command.");    
+    if (!inGroup(await interaction.message.getChat())) throw new Error ("Must be in a group to use this command.");    
 
     const chat = await interaction.message.getChat();
     try {
