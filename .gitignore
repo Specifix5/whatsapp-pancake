@@ -4,3 +4,5 @@ node_modules
 dist
 data.db
 .env
+pnpm-lock.yaml
+pnpm-workspace.yaml

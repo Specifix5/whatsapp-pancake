@@ -1,3 +1,4 @@
+import { parseDateWithTimezone } from "./dates";
 import { WhatsappCommandArgs, WhatsappCommandOption, WhatsappCommandOptionType } from "./whatsappCommand";
 
 export function parseRawArgs(input: string): Array<string> {
@@ -38,7 +39,8 @@ export const parseMessageArgs = (args: string[], commandOptions?: Array<Whatsapp
         const rawDate = arg.replace(/-+|\/+/g, " ").trim().split(/\s+/);
         if (rawDate.length < 3) throw new Error ('Invalid Date argument provided ' + rawDate.join("-"));
         
-        const date = new Date(`${rawDate[1]}-${rawDate[0]}-${rawDate[2]}`);
+
+        const date = parseDateWithTimezone(rawDate.join("-"), process.env.TIMEZONE);
         if (isNaN(date.getTime())) throw new Error ('Invalid Date argument provided ' + rawDate);
 
         options[option.name] = date;

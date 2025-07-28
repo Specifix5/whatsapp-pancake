@@ -3,6 +3,31 @@ export const getDayNameInTimezone = (date: Date, timezone: string = 'UTC'): stri
   return formatter.format(date);
 };
 
+export const getUTCOffsetMinutes = (date: Date, timezone: string = 'UTC'): number => {
+  const formatter = new Intl.DateTimeFormat('en-US', { timeZone: timezone, hour12: false, hour: '2-digit', minute: '2-digit' });
+  const parts = formatter.formatToParts(date);
+  const hour = parseInt(parts.find(part => part.type === 'hour')?.value ?? '0');
+  const minute = parseInt(parts.find(part => part.type === 'minute')?.value ?? '0');
+
+  const utcHour = date.getUTCHours();
+  const utcMinute = date.getUTCMinutes();
+
+  return (hour - utcHour) * 60 + (minute - utcMinute);
+};
+
+export const parseDateWithTimezone = (input: string, timeZone: string = 'UTC'): Date  => {
+  const [day, month, yearRaw] = input.split(/[\/\-]/).map(Number);
+  const year = yearRaw < 100 ? 2000 + yearRaw : yearRaw;
+
+  const utcMidnight = new Date(Date.UTC(year, month - 1, day));
+
+  const offsetMinutes = getUTCOffsetMinutes(utcMidnight, timeZone);
+
+  const utcOffsetMidnight = new Date(Date.UTC(year, month - 1, day, 0, 0));
+  utcOffsetMidnight.setUTCMinutes(utcMidnight.getUTCMinutes() + offsetMinutes);
+  return utcOffsetMidnight;
+};
+
 export const getDateInTimezone = (date: Date, timezone: string = 'UTC'): string => {
   const formatter = new Intl.DateTimeFormat('en-GB', { timeZone: timezone, day: '2-digit', month: '2-digit', year: '2-digit' });
   const parts = formatter.formatToParts(date);

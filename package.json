@@ -3,7 +3,8 @@
   "version": "0.0.2",
   "main": "./dist/index.js",
   "scripts": {
-    "dev": "npx tsc && node ./dist/index.js",
+    "dev": "pnpx tsc && node ./dist/index.js",
+    "build": "pnpx tsc",
     "clean": "rd /s /q \"./.wwebjs_auth\" && rd /s /q \"./.wwebjs_cache\" && rm -rf \"./.wwebjs_auth\" && rm -rf \"./.wwebjs_cache\"",
     "start": "echo Running on Production && node ./dist/index.js"
   },
@@ -16,9 +17,7 @@
     "qrcode-terminal": "^0.12.0",
     "sequelize": "^6.37.5",
     "sqlite3": "^5.1.7",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.6.3",
-    "whatsapp-web.js": "^1.26.0"
+    "whatsapp-web.js": "^1.31.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.14.0",
@@ -28,6 +27,8 @@
     "@typescript-eslint/parser": "^8.13.0",
     "eslint": "^9.14.0",
     "globals": "^15.12.0",
-    "typescript-eslint": "^8.13.0"
+    "typescript-eslint": "^8.13.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3"
   }
 }
