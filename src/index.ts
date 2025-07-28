@@ -1,15 +1,14 @@
+import 'dotenv/config';
+
 import { Client, Message, LocalAuth } from 'whatsapp-web.js';
 import { Commands, WhatsappInteraction } from './utils/whatsappCommand';
 import { parseMessageArgs, parseRawArgs } from './utils/argParser';
 import database from './utils/database';
 import debugging, { logger } from './utils/debugging';
 import qrcode from 'qrcode-terminal';
-import dotenv from 'dotenv';
 
 export const prefix = '!';
 export const version = process.env.npm_package_version;
-
-dotenv.config({ path: '../.env' });
 
 // Create a new client instance
 const client = new Client({

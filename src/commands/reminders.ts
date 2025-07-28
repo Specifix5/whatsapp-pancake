@@ -119,9 +119,6 @@ export const SetReminderCommand: WhatsappCommand = {
     const date = interaction.getOption<Date>("date");
     const text = interaction.getOption<string>("text");
     if (!date) throw new Error("Date not set.");
-
-    // So the date actually changes instead of being the day before because 0:00
-    date.setHours(24);
     
     try {
       if (interaction.message.fromMe || interaction.getOption<boolean>("incognito")) await interaction.message.delete(true);

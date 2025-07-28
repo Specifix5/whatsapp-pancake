@@ -25,6 +25,8 @@ export const parseDateWithTimezone = (input: string, timeZone: string = 'UTC'): 
 
   const utcOffsetMidnight = new Date(Date.UTC(year, month - 1, day, 0, 0));
   utcOffsetMidnight.setUTCMinutes(utcMidnight.getUTCMinutes() + offsetMinutes);
+
+  if (process.env.DEBUG_MODE === "true") console.log(utcOffsetMidnight.toISOString(), "UTC Offset Minutes:", offsetMinutes, "Timezone:", timeZone);
   return utcOffsetMidnight;
 };
 
