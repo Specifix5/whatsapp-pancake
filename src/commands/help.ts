@@ -1,5 +1,6 @@
 import { Commands, WhatsappCommand, WhatsappCommandOptionType, WhatsappInteraction } from "../utils/whatsappCommand";
 import { prefix } from "..";
+import { logger } from "../utils/debugging";
 
 export const HelpCommand: WhatsappCommand = {
   name: "help",
@@ -13,6 +14,7 @@ export const HelpCommand: WhatsappCommand = {
   ],
   run: async (interaction: WhatsappInteraction) => {
     const message = [];
+    logger((await interaction.message.getContact()).id.server);
 
     if (interaction.getOption<string>("command")) {
       const command = Commands.find(c => c.name === interaction.getOption<string>("command"));
