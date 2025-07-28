@@ -3,8 +3,8 @@
   "version": "0.0.2",
   "main": "./dist/index.js",
   "scripts": {
-    "dev": "pnpx tsc && node ./dist/index.js",
-    "build": "pnpx tsc",
+    "dev": "npx tsc && node ./dist/index.js",
+    "build": "npx tsc",
     "clean": "rd /s /q \"./.wwebjs_auth\" && rd /s /q \"./.wwebjs_cache\" && rm -rf \"./.wwebjs_auth\" && rm -rf \"./.wwebjs_cache\"",
     "start": "echo Running on Production && node ./dist/index.js"
   },
